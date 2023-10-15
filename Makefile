@@ -42,3 +42,6 @@ clean:
 clobber:
 	rm -f *.o
 
+# removes simulation output files
+cleanout:
+	rm output/*.txt re/*.txt

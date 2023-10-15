@@ -94,13 +94,11 @@ class Cache {
 		// the LRU algorithm is realised as a list/queue instead of counters
 		std::vector<std::tr1::unordered_map<uint32_t, bool> > tag_array;
 		std::vector<std::list<uint32_t> > cache_lru;
-		//std::vector<std::tr1::unordered_map<uint32_t, std::list<uint32_t>::iterator> > lru_position;
 
 		addr_t setaddr (uint32_t addr);
 
 		// Stream Buffer
 		// smallest element in strmbuff contains the block address
-		// TODO getter setter constr
 		std::list<uint32_t> strmbuff_lru;
 		std::vector<std::list<uint32_t> > strmbuff;
 		
@@ -123,13 +121,13 @@ class Cache {
 		std::list<uint32_t>::iterator get_lruend (uint32_t index);
 		std::list<uint32_t>::iterator get_lrubegin ();
 		std::list<uint32_t>::iterator get_lruend ();
-		bool get_dirty (uint32_t index, uint32_t tag);
+		char get_dirty (uint32_t index, uint32_t tag);
 		uint32_t get_sets ();
 		bool get_pfen ();
 		uint32_t get_pfm ();
 		uint32_t get_pfn ();
 		bool searchstrmbuff (uint32_t block_addr, uint32_t& strmbuff_num, uint32_t& pf_degree); // update strmbuff num and degree to be used in prefetch fxn
-		void prefetch (uint32_t addr, uint32_t strmbuff_num, uint32_t pf_degree);
+		void prefetch (uint32_t block_addr, uint32_t strmbuff_num, uint32_t pf_degree);
 
 };
 

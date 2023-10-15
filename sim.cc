@@ -262,6 +262,9 @@ Cache::Cache(
 	tag_bits = ADDR_SIZE - block_offset_bits - index_bits;
 	tag_array.resize(num_sets);
 	cache_lru.resize(num_sets);
+	// DEBUG BEGIN
+	//printf("Num set: %d\n", num_sets);
+	// DEBUG END
 	//lru_position.resize(num_sets);
 	if (en_prefetch) {
 		strmbuff.resize(pref_n);
@@ -339,8 +342,10 @@ list<uint32_t>::iterator Cache::get_strmbuffend (uint32_t index) {
 }
 
 // get dirty bit of block
-bool Cache::get_dirty (uint32_t index, uint32_t tag) {
-	return tag_array[index][tag];
+char Cache::get_dirty (uint32_t index, uint32_t tag) {
+	char dirty = tag_array[index][tag] ? 'D' : ' ';
+	//return tag_array[index][tag];
+	return dirty;
 }
 
 // get number of sets in cache
@@ -521,7 +526,6 @@ void Cache::request (char rw, uint32_t addr, bool pf) {
 	//DEBUGEND
 	
 	//DEBUG TRACE BEGIN
-	/*
 	if (DBG) {
 		printf("        %c %x (tag=%x index=%d\n", rw,addr,addr_split.tag,addr_split.index);
 		cout << "        before: ";
@@ -532,15 +536,15 @@ void Cache::request (char rw, uint32_t addr, bool pf) {
 		list<uint32_t>::iterator it;
 		for (it = get_lrubegin(addr_split.index); it != get_lruend(addr_split.index); it++) {
 			uint32_t tag = (*it);
-			char dirty = ' ';
-			if (get_dirty(addr_split.index,tag))
-				dirty = 'D';
+			char dirty = get_dirty(addr_split.index,tag);
+			//char dirty = ' ';
+			//if (get_dirty(addr_split.index,tag))
+			//	dirty = 'D';
 			cout << " ";
 			cout << right << setw(8) << hex << tag << " " << dirty;
 		}
 		cout << "\n";
 	}
-	*/
 	//DEBUG TRACE END
 
 
@@ -592,13 +596,13 @@ void Cache::request (char rw, uint32_t addr, bool pf) {
 			//printf("pref deg %d\n",pf_degree);
 			// DEBUG END
 				// prefetch(M,old)
-				prefetch(addr, strmbuff_num, pf_degree);
+				//prefetch(block_addr, strmbuff_num, pf_degree);
 			}
 
 		// if prefetch hits then update prefetch to keep it timely
 		} else {
 			// prefetch(k,n)
-			prefetch(addr, strmbuff_num, pf_degree);
+			//prefetch(block_addr, strmbuff_num, pf_degree);
 		}
 
 	// If HIT
@@ -606,17 +610,21 @@ void Cache::request (char rw, uint32_t addr, bool pf) {
 		// If prefetcher also hits then update and keep timely
 		if (prefetch_hit) {
 			// prefetch(k,n)
-			prefetch(addr, strmbuff_num, pf_degree);
+			//prefetch(block_addr, strmbuff_num, pf_degree);
 		}
 		//
 	}
 
 	// Stream Buffer LRU Update
 	if (en_prefetch && !(cache_hit && !prefetch_hit)) {
+		prefetch(block_addr, strmbuff_num, pf_degree);
 		updlru(strmbuff_lru, prefetch_hit, !prefetch_hit, strmbuff_num);
 	}
 	// Cache LRU Update
 	updlru(cache_lru[addr_split.index], cache_hit, eviction, addr_split.tag);
+	//DEBUG BEGIN
+	//printf("Index: %d, Tag: %d\n",addr_split.index,addr_split.tag);
+	//DEBUG END
 	
 	// Allocate Blocks
 	// If read miss then mark clean
@@ -651,39 +659,39 @@ void Cache::request (char rw, uint32_t addr, bool pf) {
 	// WHAT IS HAPPENING??!!
 	// DEBUG TRACE BEGIN
 	//if (DBG) {
-		//cout << "         after: ";
-		//cout << "set ";
-		//cout << right << dec << setw(6) << addr_split.index << ":";
+	//	cout << "         after: ";
+	//	cout << "set ";
+	//	cout << right << dec << setw(6) << addr_split.index << ":";
 		// For each way iterate across list from MRU to LRU
 		// check tag stored if it is dirty
 		list<uint32_t>::iterator it;
 		for (it = get_lrubegin(addr_split.index); it != get_lruend(addr_split.index); it++) {
 			uint32_t tag = (*it);
-			char dirty = ' ';
+			char dirty = get_dirty(addr_split.index,tag);
+			//char dirty = ' ';
 			//if (l1->tag_array[i][tag])
-			if (get_dirty(addr_split.index,tag))
-				dirty = 'D';
-			//cout << " ";
-			//cout << right << setw(8) << hex << tag << " " << dirty;
+			//if (get_dirty(addr_split.index,tag))
+			//	dirty = 'D';
+	//		cout << " ";
+	//		cout << right << setw(8) << hex << tag << " " << dirty;
 		}
-		//cout << "\n";
+	//	cout << "\n";
 	//}
 	// DEBUG TRACE END
 	// DEBUG TRACE BEGIN
-	/*
 	if (DBG) {
-		cout << "		PrefetchDegree: " << pf_degree << "	Stream Buffer Number: " << strmbuff_num << "\n";
-		cout << "		";
-		if(cache_hit) {
-			cout << " CacheHit ";
-		} else {
-			cout << "CacheMiss "; 
-		}
-		if (prefetch_hit) {
-			cout << " PrefetchHit\n";
-		} else {
-			cout << "PrefetchMiss\n";
-		}
+		//cout << "		PrefetchDegree: " << pf_degree << "	Stream Buffer Number: " << strmbuff_num << "\n";
+		//cout << "		";
+		//if(cache_hit) {
+		//	cout << " CacheHit ";
+		//} else {
+		//	cout << "CacheMiss "; 
+		//}
+		//if (prefetch_hit) {
+		//	cout << " PrefetchHit\n";
+		//} else {
+		//	cout << "PrefetchMiss\n";
+		//}
 		if (en_prefetch && !(cache_hit && !prefetch_hit)) {
 			list<uint32_t>::iterator it1;
 			list<uint32_t>::iterator it2;
@@ -700,7 +708,6 @@ void Cache::request (char rw, uint32_t addr, bool pf) {
 			}
 		}
 	}
-	*/
 	//// DEBUG TRACE END
 
 
@@ -807,11 +814,11 @@ bool Cache::searchstrmbuff (uint32_t block_addr, uint32_t& strmbuff_num, uint32_
 // Function to prefetch blocks from next heirarchy
 // it will remove elements at and ahead of hit location, request next level for as many blocks, and alloc
 // If it is a miss in the stream buffer it should get values indicating last element of lru buffer
-void Cache::prefetch (uint32_t addr, uint32_t strmbuff_num, uint32_t pf_degree) {
+void Cache::prefetch (uint32_t block_addr, uint32_t strmbuff_num, uint32_t pf_degree) {
 	
-	// TODO FIXME number of prefetches is 1 for stream or n?
-	// TODO FIXME similarly does a prefetch generate 1 access or n?
-	cache_metrics.incr_pf();
+	// FIXME number of prefetches is 1 for stream or n?
+	// FIXME similarly does a prefetch generate 1 access or n?
+	//cache_metrics.incr_pf();
 
 	// DEBUG BEGIN
 	//printf("Prefetching\n");
@@ -823,7 +830,7 @@ void Cache::prefetch (uint32_t addr, uint32_t strmbuff_num, uint32_t pf_degree) 
 	int buffer_size = strmbuff[strmbuff_num].size();
 
 	for (uint32_t i=0; i<pf_degree; i++) {
-		//cache_metrics.incr_pf();
+		cache_metrics.incr_pf();
 		//DEBUG BEGIN
 		//printf("contents front %x\n",strmbuff[strmbuff_num].front());
 		//DEBUG END
@@ -831,13 +838,14 @@ void Cache::prefetch (uint32_t addr, uint32_t strmbuff_num, uint32_t pf_degree) 
 			strmbuff[strmbuff_num].pop_front();
 		}
 		if (next_level) {
-			next_level->request('r',addr,true);
+			next_level->request('r',(block_addr<<(block_offset_bits)),true);
 		} else {
 			// main mem metric update	
 			mem_metrics->incr_acc();
 			mem_metrics->incr_rd();
 		}
-		strmbuff[strmbuff_num].push_back((addr>>block_offset_bits)+1+i);
+		strmbuff[strmbuff_num].push_back(block_addr+pref_m-pf_degree+i+1);
+		//strmbuff[strmbuff_num].push_back((addr>>block_offset_bits)+1+i);
 		//DEBUG BEGIN
 		//printf("contents back %x\n",strmbuff[strmbuff_num].back());
 		//DEBUG END
@@ -879,9 +887,10 @@ void print_results(Cache* l1, Cache* l2, Metrics* mem_metrics) {
 		list<uint32_t>::iterator it;
 		for (it = l1->get_lrubegin(i); it != l1->get_lruend(i); it++) {
 			uint32_t tag = (*it);
-			char dirty = ' ';
-			if (l1->get_dirty(i,tag))
-				dirty = 'D';
+			char dirty = l1->get_dirty(i,tag);
+			//char dirty = ' ';
+			//if (l1->get_dirty(i,tag))
+			//	dirty = 'D';
 			//cout << " ";
 			cout << right << setw(8) << hex << tag << " " << dirty;
 		}
@@ -906,10 +915,11 @@ void print_results(Cache* l1, Cache* l2, Metrics* mem_metrics) {
 			//for (it = l2->cache_lru[i].begin(); it != l2->cache_lru[i].end(); it++) {
 			for (it = l2->get_lrubegin(i); it != l2->get_lruend(i); it++) {
 				uint32_t tag = (*it);
-				char dirty = ' ';
+				char dirty = l2->get_dirty(i,tag);
+				//char dirty = ' ';
 				//if (l2->tag_array[i][tag])
-				if (l2->get_dirty(i,tag))
-					dirty = 'D';
+				//if (l2->get_dirty(i,tag))
+				//	dirty = 'D';
 				//cout << " ";
 				cout << right << setw(8) << hex << tag << " " << dirty;
 			}
@@ -934,6 +944,26 @@ void print_results(Cache* l1, Cache* l2, Metrics* mem_metrics) {
 			cout << '\n';
 		}
 		cout << '\n';
+	}
+
+	if (l2 != NULL) {
+		if (l2->get_pfen()) {
+			// TODO FIXME do not print invalid contents
+			// Print L2 Stream Buffer Contents
+			printf("===== Stream Buffer(s) contents =====\n");
+			// Iterate over each buffer from MRU to LRU
+			list<uint32_t>::iterator it1;
+			list<uint32_t>::iterator it2;
+			for (it1 = l2->get_lrubegin(); it1 != l2->get_lruend(); it1++) {
+				for (it2 = l2->get_strmbuffbegin(*it1); it2 != l2->get_strmbuffend(*it1); it2++) {
+					cout << ' ';
+					cout << (*it2);
+					cout << ' ';
+				}
+				cout << '\n';
+			}
+			cout << '\n';
+		}
 	}
 
 	// Print Measurements/Metrics
