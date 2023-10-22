@@ -642,6 +642,8 @@ void Cache::request (char rw, uint32_t addr, bool pf) {
 			} else {
 				cache_metrics.incr_rdmiss();
 			}
+		}
+		if (!cache_hit) {
 			tag_array[addr_split.index][addr_split.tag] = false;
 		}
 		//read(addr_split.tag, addr_split.index)
@@ -658,10 +660,10 @@ void Cache::request (char rw, uint32_t addr, bool pf) {
 	
 	// WHAT IS HAPPENING??!!
 	// DEBUG TRACE BEGIN
-	//if (DBG) {
-	//	cout << "         after: ";
-	//	cout << "set ";
-	//	cout << right << dec << setw(6) << addr_split.index << ":";
+	if (DBG) {
+		cout << "         after: ";
+		cout << "set ";
+		cout << right << dec << setw(6) << addr_split.index << ":";
 		// For each way iterate across list from MRU to LRU
 		// check tag stored if it is dirty
 		list<uint32_t>::iterator it;
@@ -672,11 +674,11 @@ void Cache::request (char rw, uint32_t addr, bool pf) {
 			//if (l1->tag_array[i][tag])
 			//if (get_dirty(addr_split.index,tag))
 			//	dirty = 'D';
-	//		cout << " ";
-	//		cout << right << setw(8) << hex << tag << " " << dirty;
+			cout << " ";
+			cout << right << setw(8) << hex << tag << " " << dirty;
 		}
-	//	cout << "\n";
-	//}
+		cout << "\n";
+	}
 	// DEBUG TRACE END
 	// DEBUG TRACE BEGIN
 	if (DBG) {
