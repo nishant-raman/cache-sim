@@ -32,6 +32,17 @@ sim: $(SIM_OBJ)
 .cpp.o:
 	$(CC) $(CFLAGS) -c $*.cpp
 
+# rule for parsing output files
+parse: csv exp
+	@cd re/ && python3 parse.py
+
+# rule for generating csv
+csv:
+	echo bs,s1,a1,s2,a2,pfn,pfm,mr1,mr2 > re/re.csv
+
+# rule for running experiments
+exp: sim
+	source run.sh
 
 # type "make clean" to remove all .o files plus the sim binary
 clean:
