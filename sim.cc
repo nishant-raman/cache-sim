@@ -106,7 +106,7 @@ int main (int argc, char *argv[]) {
 			exit(EXIT_FAILURE);
 		}
 		*/
-		// DEBUG TRACE BEGIN
+
 		if (DBG) {
 			dbgidx++;
 			if (rw == 'r') {
@@ -115,7 +115,6 @@ int main (int argc, char *argv[]) {
 				printf("%d=w %x\n", dbgidx,addr);
 			}
 		}
-		// DEBUG TRACE END
 
 	///////////////////////////////////////////////////////
 	// Issue the request to the L1 cache instance here.
@@ -140,107 +139,54 @@ int main (int argc, char *argv[]) {
 
 // --------------------- Metrics functions --------------------------
 // Constructor for Metrics
-Metrics::Metrics() : n_acc(0), n_rd(0), n_rd_miss(0), n_wr(0), n_wr_miss(0), n_wb(0) {
-	// DEBUG BEGIN
-	//printf("Metrics construction\n");
-	//printf("n_acc %d, n_rd %d, n_wr %d, n_rd_miss %d, n_wr_miss %d\n", n_acc, n_rd, n_wr, n_rd_miss, n_wr_miss);
-	// DEBUG END
-}
+Metrics::Metrics() : n_acc(0), n_rd(0), n_rd_miss(0), n_wr(0), n_wr_miss(0), n_wb(0) {}
 
 // Setters
 // Increment number of accesses of current cache
-void Metrics::incr_acc () {
-	n_acc++;
-	return;
-}
+void Metrics::incr_acc () { n_acc++; }
 
 // Increment number of reads of current cache
-void Metrics::incr_rd () {
-	n_rd++;
-	return;
-}
+void Metrics::incr_rd () { n_rd++; }
 
 // Increment number of read misses of current cache
-void Metrics::incr_rdmiss () {
-	n_rd_miss++;
-	return;
-}
+void Metrics::incr_rdmiss () { n_rd_miss++; }
 
 // Increment number of writes of current cache
-void Metrics::incr_wr () {
-	n_wr++;
-	return;
-}
+void Metrics::incr_wr () { n_wr++; }
 
 // Increment number of write misses of current cache
-void Metrics::incr_wrmiss () {
-	n_wr_miss++;
-	return;
-}
+void Metrics::incr_wrmiss () { n_wr_miss++; }
 
 // Increment number of writebacks of current cache
-void Metrics::incr_wb () {
-	n_wb++;
-	return;
-}
+void Metrics::incr_wb () { n_wb++; }
 
 // Increment number of rd of current cache due to prefetches
-void Metrics::incr_rd_pf () {
-	n_rd_pf++;
-	return;
-}
+void Metrics::incr_rd_pf () { n_rd_pf++; }
 
 // Increment number of read misses of current cache due to prefetches
-void Metrics::incr_rdmiss_pf () {
-	n_rd_miss_pf++;
-	return;
-}
+void Metrics::incr_rdmiss_pf () { n_rd_miss_pf++; }
 
 // Increment number of prefetches of current cache to next level
-void Metrics::incr_pf () {
-	//DEBUG BEGIN
-	//printf("Number of prefetches so far: %d\n", n_pf);
-	//DEBUG END
-	n_pf++;
-	return;
-}
+void Metrics::incr_pf () { n_pf++; }
 
 // Getters
-uint32_t Metrics::get_acc () {
-	return n_acc;
-}
+uint32_t Metrics::get_acc () { return n_acc; }
 
-uint32_t Metrics::get_rd () {
-	return n_rd;
-}
+uint32_t Metrics::get_rd () { return n_rd; }
 
-uint32_t Metrics::get_rdmiss () {
-	return n_rd_miss;
-}
+uint32_t Metrics::get_rdmiss () { return n_rd_miss; }
 
-uint32_t Metrics::get_wr () {
-	return n_wr;
-}
+uint32_t Metrics::get_wr () { return n_wr; }
 
-uint32_t Metrics::get_wrmiss () {
-	return n_wr_miss;
-}
+uint32_t Metrics::get_wrmiss () { return n_wr_miss; }
 
-uint32_t Metrics::get_wb () {
-	return n_wb;
-}
+uint32_t Metrics::get_wb () { return n_wb; }
 
-uint32_t Metrics::get_rd_pf () {
-	return n_rd_pf;
-}
+uint32_t Metrics::get_rd_pf () { return n_rd_pf; }
 
-uint32_t Metrics::get_rdmiss_pf () {
-	return n_rd_miss_pf;
-}
+uint32_t Metrics::get_rdmiss_pf () { return n_rd_miss_pf; }
 
-uint32_t Metrics::get_pf () {
-	return n_pf;
-}
+uint32_t Metrics::get_pf () { return n_pf; }
 
 //----------------- Cache Class functions -------------//
 // Cache constructor
@@ -251,10 +197,6 @@ Cache::Cache(
 	uint32_t block_size, uint32_t size, uint32_t assoc, bool en_prefetch, uint32_t pref_n, uint32_t pref_m
 ) : block_size(block_size), size(size), assoc(assoc), en_prefetch(en_prefetch), pref_n(pref_n), pref_m(pref_m) {
 	
-	// DEBUG BEGIN
-	//printf("Cache construction\n");
-	//printf("blocksize %d, size %d, assoc %d, pref_n %d, pref_m %d\n", block_size, size, assoc, pref_n, pref_m);
-	// DEBUG END
 	// derive address division
 	block_offset_bits = bit_count(block_size);
 	num_sets = (uint32_t) size/(block_size*assoc);
@@ -262,9 +204,6 @@ Cache::Cache(
 	tag_bits = ADDR_SIZE - block_offset_bits - index_bits;
 	tag_array.resize(num_sets);
 	cache_lru.resize(num_sets);
-	// DEBUG BEGIN
-	//printf("Num set: %d\n", num_sets);
-	// DEBUG END
 	//lru_position.resize(num_sets);
 	if (en_prefetch) {
 		strmbuff.resize(pref_n);
@@ -287,223 +226,52 @@ addr_t Cache::setaddr (uint32_t addr) {
 	addr_split.index 		= (index_mask & addr)>>block_offset_bits; 
 	addr_split.tag 			= (tag_mask & addr)>>(block_offset_bits+index_bits); 
 
-	// DEBUG BEGIN
-	//printf("Parsing Addresses\n");
-	//printf("bo bits %d, i bits %d, t bits %d\n",block_offset_bits, index_bits, tag_bits);
-	//printf("bo mask %x, i mask %x, t mask %x\n",block_offset_mask, index_mask, tag_mask);
-	//printf("bo valu %x, i valu %x, t valu %x\n",addr_split.block_offset, addr_split.index, addr_split.tag);
-	// DEBUG END
-
 	return addr_split;
 }
 
 // set the pointer to the next level of memory heirarchy
 // pointer is NULL if pointing to Main memory
-void Cache::setnext (Cache* next) {
-	next_level = next;
-	return;
-}
+void Cache::setnext (Cache* next) { next_level = next; }
 
 // pass pointer to main memory access metrics if next heirarchy is mem
-void Cache::setmmm (Metrics* main_mem_metrics) {
-	mem_metrics = main_mem_metrics;
-	return;
-}
+void Cache::setmmm (Metrics* main_mem_metrics) { mem_metrics = main_mem_metrics; }
 
 // Getters
 // get iterator to beginning of list (MRU)
-list<uint32_t>::iterator Cache::get_lrubegin () {
-	return strmbuff_lru.begin();
-}
+list<uint32_t>::iterator Cache::get_lrubegin () { return strmbuff_lru.begin(); }
 
 // get iterator to end of list (LRU)
-list<uint32_t>::iterator Cache::get_lruend () {
-	return strmbuff_lru.end();
-}
+list<uint32_t>::iterator Cache::get_lruend () { return strmbuff_lru.end(); }
 
 // get iterator to beginning of list (MRU)
-list<uint32_t>::iterator Cache::get_lrubegin (uint32_t index) {
-	return cache_lru[index].begin();
-}
+list<uint32_t>::iterator Cache::get_lrubegin (uint32_t index) { return cache_lru[index].begin(); }
 
 // get iterator to end of list (LRU)
-list<uint32_t>::iterator Cache::get_lruend (uint32_t index) {
-	return cache_lru[index].end();
-}
+list<uint32_t>::iterator Cache::get_lruend (uint32_t index) { return cache_lru[index].end(); }
 
 // get iterator to beginning of list (MRU)
-list<uint32_t>::iterator Cache::get_strmbuffbegin (uint32_t index) {
-	return strmbuff[index].begin();
-}
+list<uint32_t>::iterator Cache::get_strmbuffbegin (uint32_t index) { return strmbuff[index].begin(); }
 
 // get iterator to end of list (LRU)
-list<uint32_t>::iterator Cache::get_strmbuffend (uint32_t index) {
-	return strmbuff[index].end();
-}
+list<uint32_t>::iterator Cache::get_strmbuffend (uint32_t index) { return strmbuff[index].end(); }
 
 // get dirty bit of block
 char Cache::get_dirty (uint32_t index, uint32_t tag) {
 	char dirty = tag_array[index][tag] ? 'D' : ' ';
-	//return tag_array[index][tag];
 	return dirty;
 }
 
 // get number of sets in cache
-uint32_t Cache::get_sets () {
-	return num_sets;
-}
+uint32_t Cache::get_sets () { return num_sets; }
 
 // get if prefetch is enabled
-bool Cache::get_pfen () {
-	return en_prefetch;
-}
+bool Cache::get_pfen () { return en_prefetch; }
 
 // get pref n value
-uint32_t Cache::get_pfn () {
-	return pref_n;
-}
+uint32_t Cache::get_pfn () { return pref_n; }
 
 // get pref n value
-uint32_t Cache::get_pfm () {
-	return pref_m;
-}
-
- /*
-// Parses the address and reads or writes into cache as per operation
-void Cache::request (char rw, uint32_t addr, bool pf) {
-
-	// FIXME if pf set update lru normally?
-
-	addr_t addr_split = setaddr(addr);
-	cache_metrics.incr_acc();
-	
-	bool hit = tag_array[addr_split.index].find(addr_split.tag) != tag_array[addr_split.index].end();
-	bool eviction = tag_array[addr_split.index].size() == assoc;
-
-	//DEBUG BEGIN
-	//printf("        %c %x (tag=%x index=%d\n", rw,addr,addr_split.tag,addr_split.index);
-	//cout << "        before: ";
-	//cout << "set ";
-	//cout << right << dec << setw(6) << addr_split.index << ":";
-	//// For each way iterate across list from MRU to LRU
-	//// check tag stored if it is dirty
-	//list<uint32_t>::iterator it;
-	////for (it = l1->cache_lru[i].begin(); it != l1->cache_lru[i].end(); it++) {
-	//for (it = get_lrubegin(addr_split.index); it != get_lruend(addr_split.index); it++) {
-	//	uint32_t tag = (*it);
-	//	char dirty = ' ';
-	//	//if (l1->tag_array[i][tag])
-	//	if (get_dirty(addr_split.index,addr_split.tag))
-	//		dirty = 'D';
-	//	cout << " ";
-	//	cout << right << setw(8) << hex << tag << " " << dirty;
-	//}
-	//cout << "\n";
-	//DEBUG END
-
-	// If HIT
-	if (hit) {
-		// remove hit way from lru (so that it can be set as most recent later)
-		//cache_lru[addr_split.index].erase(lru_position[addr_split.index][addr_split.tag]);
-		cache_lru[addr_split.index].remove(addr_split.tag);
-
-	// If MISS
-	} else {
-		// If no space in cache set
-		if (eviction) {
-			// What is the oldest address (least recently used)
-			// Evict that block
-			uint32_t old_tag = cache_lru[addr_split.index].back();	
-			cache_lru[addr_split.index].pop_back();
-			//lru_position[addr_split.index].erase(old_tag);
-
-			// if evicted block is dirty - writeback 
-			if (tag_array[addr_split.index][old_tag]) {
-				// reverse address computation from lru tag and index
-				// Block offset is ignored here since no longer relevant
-				uint32_t old_addr = (old_tag<<(block_offset_bits+index_bits)) | (addr_split.index<<(block_offset_bits)); 
-				// writeback to evicted (old/least recent) address
-				// if next_level is NULL then just update main memory metrics
-				cache_metrics.incr_wb();
-				if (next_level) {
-					next_level->request('w', old_addr, 0);
-				} else {
-					// main mem metric update	
-					mem_metrics->incr_acc();
-					mem_metrics->incr_wr();
-				}
-			}
-
-			// Evict
-			tag_array[addr_split.index].erase(old_tag);
-		}
-
-		// Then read next level for new block
-		// if next_level is NULL then just update main memory metrics
-		if (next_level) {
-			next_level->request('r', addr, 0);
-		} else {
-			// main mem metric update	
-			mem_metrics->incr_acc();
-			mem_metrics->incr_rd();
-		}
-	}
-
-	// Add accessed block to top of recency list
-	cache_lru[addr_split.index].push_front(addr_split.tag);
-	//lru_position[addr_split.index][addr_split.tag] = cache_lru[addr_split.index].begin();
-
-	// If read then mark clean
-	// If request is sourced from prefetch then incr pf related metrics
-	if (rw == 'r') {
-		if (pf) {
-			cache_metrics.incr_rd_pf();
-		} else {
-			cache_metrics.incr_rd();
-		}
-			
-		if (!hit) {
-			if (pf) {
-				cache_metrics.incr_rdmiss_pf();
-			} else {
-				cache_metrics.incr_rdmiss();
-			}
-			tag_array[addr_split.index][addr_split.tag] = false;
-		}
-		//read(addr_split.tag, addr_split.index)
-	} else 
-	// If write the mark dirty
-	if (rw == 'w') {
-		cache_metrics.incr_wr();
-		if (!hit)
-			cache_metrics.incr_wrmiss();
-		//write(addr_split.tag, addr_split.index)
-		tag_array[addr_split.index][addr_split.tag] = true;
-	}
-
-	// DEBUG BEGIN
-	//cout << "         after: ";
-	//cout << "set ";
-	//cout << right << dec << setw(6) << addr_split.index << ":";
-	//// For each way iterate across list from MRU to LRU
-	//// check tag stored if it is dirty
-	////list<uint32_t>::iterator it;
-	////for (it = l1->cache_lru[i].begin(); it != l1->cache_lru[i].end(); it++) {
-	//for (it = get_lrubegin(addr_split.index); it != get_lruend(addr_split.index); it++) {
-	//	uint32_t tag = (*it);
-	//	char dirty = ' ';
-	//	//if (l1->tag_array[i][tag])
-	//	if (get_dirty(addr_split.index,addr_split.tag))
-	//		dirty = 'D';
-	//	cout << " ";
-	//	cout << right << setw(8) << hex << tag << " " << dirty;
-	//}
-	//cout << "\n";
-	//DEBUG END
-
-	return;
-}
-*/
+uint32_t Cache::get_pfm () { return pref_m; }
 
 
 // General Cache request function handling prefetches as well
@@ -520,12 +288,7 @@ void Cache::request (char rw, uint32_t addr, bool pf) {
 
 	uint32_t strmbuff_num = strmbuff_lru.back(); 	// index of stream buffer (n) - by default oldest
 	uint32_t pf_degree = pref_m;	// how many blocks to prefetch OR at which block did prefetcher hit
-	//DEBUG BEGIN
-	//printf("Just init, pf deg: %d\n",pf_degree);
-	//printf("Just init, sb num: %d\n",strmbuff_num);
-	//DEBUGEND
 	
-	//DEBUG TRACE BEGIN
 	if (DBG) {
 		printf("        %c %x (tag=%x index=%d\n", rw,addr,addr_split.tag,addr_split.index);
 		cout << "        before: ";
@@ -537,36 +300,21 @@ void Cache::request (char rw, uint32_t addr, bool pf) {
 		for (it = get_lrubegin(addr_split.index); it != get_lruend(addr_split.index); it++) {
 			uint32_t tag = (*it);
 			char dirty = get_dirty(addr_split.index,tag);
-			//char dirty = ' ';
-			//if (get_dirty(addr_split.index,tag))
-			//	dirty = 'D';
 			cout << " ";
 			cout << right << setw(8) << hex << tag << " " << dirty;
 		}
 		cout << "\n";
 	}
-	//DEBUG TRACE END
 
 
 	if (en_prefetch) {
 		prefetch_hit = searchstrmbuff(block_addr, strmbuff_num, pf_degree);
 		//prefetch_hit = searchstrmbuff(addr, strmbuff_num, pf_degree);
-		//DEBUG BEGIN
-		//printf("pf en, pf hit? %d, pf deg: %d\n",prefetch_hit,pf_degree);
-		//printf("pf en pf hit?, sb num: %d\n",strmbuff_num);
-		//DEBUGEND
 		if (!prefetch_hit) {
 			strmbuff_num = strmbuff_lru.back();
 			pf_degree = pref_m;
-			//DEBUG BEGIN
-			//printf("pf en, no pf hit? %d, pf deg upd: %d\n",prefetch_hit,pf_degree);
-			//printf("pf en no pf hit?, sb num: %d\n",strmbuff_num);
-			//DEBUGEND
 		}
 	}
-	//DEBUG BEGIN
-	//printf("Cache hit? %d, Pref en? %d, Prefetch hit? %d\n", cache_hit, en_prefetch, prefetch_hit);
-	// DEBUG END
 
 	// If Missed in Tag Array
 	if (!cache_hit) {
@@ -590,41 +338,25 @@ void Cache::request (char rw, uint32_t addr, bool pf) {
 			}
 
 			// If prefetcher is enabled initiate prefetch of full buffer size
-			if (en_prefetch) {
-			// DEBUG BEGIN
-			//printf("size of buff %d\n",strmbuff[strmbuff_num].size());
-			//printf("pref deg %d\n",pf_degree);
-			// DEBUG END
-				// prefetch(M,old)
-				//prefetch(block_addr, strmbuff_num, pf_degree);
-			}
+			// DONE LATER
+		}
 
 		// if prefetch hits then update prefetch to keep it timely
-		} else {
-			// prefetch(k,n)
-			//prefetch(block_addr, strmbuff_num, pf_degree);
-		}
-
-	// If HIT
-	} else {
-		// If prefetcher also hits then update and keep timely
-		if (prefetch_hit) {
-			// prefetch(k,n)
-			//prefetch(block_addr, strmbuff_num, pf_degree);
-		}
-		//
+		// DONE LATER
 	}
 
+	// If HIT
+		// If prefetcher also hits then update and keep timely
+		// DONE LATER
+
 	// Stream Buffer LRU Update
+	// All cases of prefetching and updates taken care of here
 	if (en_prefetch && !(cache_hit && !prefetch_hit)) {
 		prefetch(block_addr, strmbuff_num, pf_degree);
 		updlru(strmbuff_lru, prefetch_hit, !prefetch_hit, strmbuff_num);
 	}
 	// Cache LRU Update
 	updlru(cache_lru[addr_split.index], cache_hit, eviction, addr_split.tag);
-	//DEBUG BEGIN
-	//printf("Index: %d, Tag: %d\n",addr_split.index,addr_split.tag);
-	//DEBUG END
 	
 	// Allocate Blocks
 	// If read miss then mark clean
@@ -658,8 +390,6 @@ void Cache::request (char rw, uint32_t addr, bool pf) {
 		tag_array[addr_split.index][addr_split.tag] = true;
 	}
 	
-	// WHAT IS HAPPENING??!!
-	// DEBUG TRACE BEGIN
 	if (DBG) {
 		cout << "         after: ";
 		cout << "set ";
@@ -679,21 +409,8 @@ void Cache::request (char rw, uint32_t addr, bool pf) {
 		}
 		cout << "\n";
 	}
-	// DEBUG TRACE END
-	// DEBUG TRACE BEGIN
+
 	if (DBG) {
-		//cout << "		PrefetchDegree: " << pf_degree << "	Stream Buffer Number: " << strmbuff_num << "\n";
-		//cout << "		";
-		//if(cache_hit) {
-		//	cout << " CacheHit ";
-		//} else {
-		//	cout << "CacheMiss "; 
-		//}
-		//if (prefetch_hit) {
-		//	cout << " PrefetchHit\n";
-		//} else {
-		//	cout << "PrefetchMiss\n";
-		//}
 		if (en_prefetch && !(cache_hit && !prefetch_hit)) {
 			list<uint32_t>::iterator it1;
 			list<uint32_t>::iterator it2;
@@ -710,15 +427,9 @@ void Cache::request (char rw, uint32_t addr, bool pf) {
 			}
 		}
 	}
-	//// DEBUG TRACE END
-
-
-	return;
 
 }
 
-// Cache block allocation function (miss or hit)
-//void tagalloc (uint32_t tag, uint32_t index, bool c_hit, bool pf_hit, bool evict) {
 // Cache block eviction
 void Cache::evict (uint32_t tag, uint32_t index) {
 
@@ -781,26 +492,16 @@ bool Cache::searchstrmbuff (uint32_t block_addr, uint32_t& strmbuff_num, uint32_
 	// mask block offset bits in the address	
 	//addr &= ~((1<<block_offset_bits)-1);
 
-	// DEBUG BEGIN
-	//printf("searching sb, addr: %x\n", addr);
-	// DEBUG END
 	// Search from MRU to LRU stream buffer
 	list<uint32_t>::iterator itlru;
 	for (itlru=strmbuff_lru.begin(); itlru!=strmbuff_lru.end(); itlru++) {
 		strmbuff_num = *itlru;
-		// DEBUG BEGIN
-		//printf("comparing1, addr: %d\n", *itlru);
-		//printf("comparing1, addr1: %d\n", strmbuff_num);
-		// DEBUG END
 		
 		// Search a buffer for the block address
 		list<uint32_t>::iterator itbuf;
 		pf_degree = 0;
 		for (itbuf=strmbuff[strmbuff_num].begin(); itbuf!=strmbuff[strmbuff_num].end(); itbuf++) {
 			pf_degree++;
-				// DEBUG BEGIN
-				//printf("comparing, addr: %x\n", *itbuf);
-				// DEBUG END
 			//if ((*itbuf) == (addr)) {
 			if ((*itbuf) == (block_addr)) {
 			//if ((*itbuf) == (addr>>block_offset_bits)) {
@@ -820,22 +521,11 @@ void Cache::prefetch (uint32_t block_addr, uint32_t strmbuff_num, uint32_t pf_de
 	
 	// FIXME number of prefetches is 1 for stream or n?
 	// FIXME similarly does a prefetch generate 1 access or n?
-	//cache_metrics.incr_pf();
-
-	// DEBUG BEGIN
-	//printf("Prefetching\n");
-	//printf("At top : %x\n", strmbuff[strmbuff_num].front());
-	//printf("Prefetch Degeww : %d\n", pf_degree);
-	//printf("Stream buffer number : %d\n", strmbuff_num);
-	// DEBUG END
 
 	int buffer_size = strmbuff[strmbuff_num].size();
 
 	for (uint32_t i=0; i<pf_degree; i++) {
 		cache_metrics.incr_pf();
-		//DEBUG BEGIN
-		//printf("contents front %x\n",strmbuff[strmbuff_num].front());
-		//DEBUG END
 		if (buffer_size) {
 			strmbuff[strmbuff_num].pop_front();
 		}
@@ -848,9 +538,6 @@ void Cache::prefetch (uint32_t block_addr, uint32_t strmbuff_num, uint32_t pf_de
 		}
 		strmbuff[strmbuff_num].push_back(block_addr+pref_m-pf_degree+i+1);
 		//strmbuff[strmbuff_num].push_back((addr>>block_offset_bits)+1+i);
-		//DEBUG BEGIN
-		//printf("contents back %x\n",strmbuff[strmbuff_num].back());
-		//DEBUG END
 	}
 	
 
